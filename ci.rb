@@ -37,7 +37,7 @@ additional_urls=%w(
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(" ")}\" #{cores.join(" ")}")
 
 env='ARDUINO_DIRECTORIES_USER="$PWD/out"'
-lib = "$ARDUINO_DIRECTORIES_USER/libraries"
+lib = "$PWD/out/libraries"
 `rm -rf "#{lib}"`
 `mkdir -p "#{lib}"`
 `ln -s "$PWD" "#{lib}/OurLibrary"`
