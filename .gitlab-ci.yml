@@ -1,0 +1,13 @@
+image: $CI_REGISTRY_IMAGE/nixos/nix:2.3.6
+
+stages:
+  - ci
+
+ci:
+  stage: ci
+  tags:
+    - nix
+  script:
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/dev/vl53l1x-arduino
+    - cd vl53l1x-arduino
+    - ../ci.rb
