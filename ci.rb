@@ -1,6 +1,12 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -I nixpkgs=channel:nixos-20.09 -i ruby -p ruby arduino-cli "python3.withPackages(ps: [ ps.pyserial ])"
 
+class String
+  def red;            "\e[31m#{self}\e[0m" end
+  def green;          "\e[32m#{self}\e[0m" end
+  def magenta;        "\e[35m#{self}\e[0m" end
+end
+
 boards = %w(
   esp32:esp32:featheresp32
   esp8266:esp8266:huzzah
@@ -55,15 +61,15 @@ system("#{env} arduino-cli lib install #{deps.join(" ")}") if deps.any?
 compile_results = {}
 Dir.glob('examples/*').each do |e|
   boards.each do |b|
-    puts "Compiling #{e} for #{b}"
+    puts "Compiling #{e} for #{b}".magenta
     compile_results["#{e} for #{b}"] = system("#{env} arduino-cli compile --warnings all --fqbn \"#{b}\" \"#{e}\" --output-dir \"./out/#{e}\"")
   end
 end
 
 puts
-puts "Compilation results"
+puts "Compilation results".magenta
 compile_results.each_pair do |key, value|
-  puts "#{value ? "SUCCESS" : "   FAIL"} compiling #{key}"
+  puts "#{value ? "SUCCESS".green : "   FAIL".red} compiling #{key}"
 end
 
 exit compile_results.values.all?
