@@ -19,7 +19,7 @@ boards = %w(
   arduino:samd:arduino_zero_native
   Intel:arc32:arduino_101
   )
-boards -= (ENV["ARDUINO_SUBTRACT_BOARDS"]&.split(',') || [])
+boards -= (ENV["ARDUINO_SKIP_BOARDS"]&.split(',') || [])
 boards += (ENV["ARDUINO_ADD_BOARDS"]&.split(',') || [])
 boards = (ENV["ARDUINO_ONLY_BOARDS"]&.split(',') || boards)
 
@@ -31,7 +31,7 @@ cores = %w(
   esp8266:esp8266
   esp32:esp32
   )
-cores -= (ENV["ARDUINO_SUBTRACT_CORES"]&.split(',') || [])
+cores -= (ENV["ARDUINO_SKIP_CORES"]&.split(',') || [])
 cores += (ENV["ARDUINO_ADD_CORES"]&.split(',') || [])
 cores = (ENV["ARDUINO_ONLY_CORES"]&.split(',') || cores)
 
@@ -39,6 +39,9 @@ additional_urls=%w(
   https://arduino.esp8266.com/stable/package_esp8266com_index.json
   https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 )
+additional_urls -= (ENV["ARDUINO_SKIP_ADDITIONAL_URLS"]&.split(',') || [])
+additional_urls += (ENV["ARDUINO_ADD_ADDITIONAL_URLS"]&.split(',') || [])
+additional_urls = (ENV["ARDUINO_ONLY_ADDITIONAL_URLS"]&.split(',') || additional_urls)
 
 system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(",")}\"")
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(",")}\" #{cores.join(" ")}")
