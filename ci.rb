@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -I nixpkgs=channel:nixos-20.09 -i ruby -p ruby arduino-cli "python3.withPackages(ps: [ ps.pyserial ])"
+#!nix-shell -I nixpkgs=channel:nixos-20.09 -i ruby -p patchelf ruby arduino-cli "python3.withPackages(ps: [ ps.pyserial ])"
 
 class String
   def red;            "\e[31m#{self}\e[0m" end
@@ -43,7 +43,18 @@ additional_urls=%w(
 system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(",")}\"")
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(",")}\" #{cores.join(" ")}")
 
-env='ARDUINO_DIRECTORIES_USER="$PWD/out"'
+# Fixup esp32 dynamically-linked binaries
+zlib = `nix-build -I nixpkgs=channel:nixos-20.09 --no-out-link -E '(import <nixpkgs> {}).zlib'`.chomp
+needs_patching = %W(
+  #{Dir.home}/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/*/bin/*
+)
+needs_patching.each do |g|
+  Dir.glob(g).each do |bin|
+    system "patchelf --set-interpreter \"$(< \"$NIX_CC/nix-support/dynamic-linker\")\" --add-needed #{zlib}/lib/libz.so #{bin}"
+  end
+end
+
+env="ARDUINO_DIRECTORIES_USER=\"$PWD/out\""
 lib = "$PWD/out/libraries"
 `rm -rf "#{lib}"`
 `mkdir -p "#{lib}"`
