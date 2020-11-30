@@ -34,6 +34,7 @@ additional_urls=%w(
   https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 )
 
+system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(" ")}\"")
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(" ")}\" #{cores.join(" ")}")
 
 env='ARDUINO_DIRECTORIES_USER="$PWD/out"'
