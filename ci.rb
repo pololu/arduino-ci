@@ -64,3 +64,5 @@ puts "Compilation results"
 compile_results.each_pair do |key, value|
   puts "#{value ? "SUCCESS" : "   FAIL"} compiling #{key}"
 end
+
+exit compile_results.values.all?
