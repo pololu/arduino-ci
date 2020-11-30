@@ -1,6 +1,6 @@
-# Pololu CI for Arduino Libraries
+# Centralized CI for Arduino Libraries
 
-This allows central management of the CI tests of Pololu's Arduino libraries. It uses arduino-cli to install dependencies and then it compiles every example with every board.
+This allows central management of the continuous integration (CI) tests of Arduino libraries. It uses arduino-cli to install dependencies and then it compiles every example with every board.
 
 # Dependencies
 
