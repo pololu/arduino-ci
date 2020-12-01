@@ -15,9 +15,6 @@ This allows central management of the continuous integration (CI) tests of Ardui
 
 Environment variables can be used to customize the tests:
 
-* `ARDUINO_CI_SKIP_CORES` - skips default cores (comma separated)
-* `ARDUINO_CI_ADD_CORES` -  adds additional cores (comma separated)
-* `ARDUINO_CI_ONLY_CORES` -  use only these cores (comma separated)
 * `ARDUINO_CI_SKIP_BOARDS` - skips default boards (comma separated)
 * `ARDUINO_CI_ADD_BOARDS` -  adds additional boards (comma separated)
 * `ARDUINO_CI_ONLY_BOARDS` -  use only these boards (comma separated)

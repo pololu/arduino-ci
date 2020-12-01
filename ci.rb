@@ -23,22 +23,11 @@ boards -= (ENV["ARDUINO_CI_SKIP_BOARDS"]&.split(',') || [])
 boards += (ENV["ARDUINO_CI_ADD_BOARDS"]&.split(',') || [])
 boards = (ENV["ARDUINO_CI_ONLY_BOARDS"]&.split(',') || boards)
 
-cores = %w(
-  arduino:avr
-  arduino:sam
-  arduino:samd
-  Intel:arc32
-  esp8266:esp8266
-  esp32:esp32
-  )
-cores -= (ENV["ARDUINO_CI_SKIP_CORES"]&.split(',') || [])
-cores += (ENV["ARDUINO_CI_ADD_CORES"]&.split(',') || [])
-cores = (ENV["ARDUINO_CI_ONLY_CORES"]&.split(',') || cores)
+cores = boards.map { |b| b.split(':')[0..1].join(':') }.uniq
 
-additional_urls=%w(
-  https://arduino.esp8266.com/stable/package_esp8266com_index.json
-  https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-)
+additional_urls = []
+additional_urls << "https://arduino.esp8266.com/stable/package_esp8266com_index.json" if cores.include? "esp8266:esp8266"
+additional_urls << "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" if cores.include? "esp32:esp32"
 additional_urls -= (ENV["ARDUINO_CI_SKIP_ADDITIONAL_URLS"]&.split(',') || [])
 additional_urls += (ENV["ARDUINO_CI_ADD_ADDITIONAL_URLS"]&.split(',') || [])
 additional_urls = (ENV["ARDUINO_CI_ONLY_ADDITIONAL_URLS"]&.split(',') || additional_urls)
@@ -46,14 +35,12 @@ additional_urls = (ENV["ARDUINO_CI_ONLY_ADDITIONAL_URLS"]&.split(',') || additio
 system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(",")}\"")
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(",")}\" #{cores.join(" ")}")
 
-# Fixup esp32 dynamically-linked binaries
-zlib = `nix-build -I nixpkgs=channel:nixos-20.09 --no-out-link -E '(import <nixpkgs> {}).zlib'`.chomp
-needs_patching = %W(
-  #{Dir.home}/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/*/bin/*
-)
-needs_patching.each do |g|
-  Dir.glob(g).each do |bin|
-    system "patchelf --set-interpreter \"$(< \"$NIX_CC/nix-support/dynamic-linker\")\" --add-needed #{zlib}/lib/libz.so #{bin}"
+if cores.include? "esp32:esp32"
+  # Fixup esp32 dynamically-linked binaries
+  zlib = `nix-build -I nixpkgs=channel:nixos-20.09 --no-out-link -E '(import <nixpkgs> {}).zlib'`.chomp
+  cpplib = `nix-build -I nixpkgs=channel:nixos-20.09 --no-out-link -E '(import <nixpkgs> {}).stdenv.cc.cc.lib'`.chomp
+  Dir.glob("#{Dir.home}/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/*/bin/*").each do |bin|
+    system "patchelf --set-interpreter \"$(< \"$NIX_CC/nix-support/dynamic-linker\")\" --add-needed #{zlib}/lib/libz.so --add-needed #{cpplib}/lib/libstdc++.so.6 #{bin}"
   end
 end
 
