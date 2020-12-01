@@ -24,3 +24,4 @@ Environment variables can be used to customize the tests:
 * `ARDUINO_SKIP_ADDITIONAL_URLS` - skips default additional_urls (comma separated)
 * `ARDUINO_ADD_ADDITIONAL_URLS` -  adds additional additional_urls (comma separated)
 * `ARDUINO_ONLY_ADDITIONAL_URLS` -  use only these additional_urls (comma separated)
+* `ARDUINO_DEPS_GIT` -  additional Arduino library dependencies to check out via git (comma separated). For example, "PololuMenu=https://github.com/pololu/pololu-menu-arduino.git".

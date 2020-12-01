@@ -69,8 +69,13 @@ deps = File.read('library.properties').
          split.
          select { |line| line.start_with? prefix }.
          flat_map { |line| line.delete_prefix(prefix).split(",") }
-
 system("#{env} arduino-cli lib install #{deps.join(" ")}") if deps.any?
+
+deps_git = (ENV["ARDUINO_DEPS_GIT"].&split(',') || [])
+deps_git.each do |dep_git|
+  name, git_url = dep_git.split("=")
+  system("git clone \"#{git_url}\" \"#{lib}/#{name}\"")
+end
 
 compile_results = {}
 Dir.glob('examples/*').each do |e|
