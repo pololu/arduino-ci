@@ -15,13 +15,13 @@ This allows central management of the continuous integration (CI) tests of Ardui
 
 Environment variables can be used to customize the tests:
 
-* `ARDUINO_SKIP_CORES` - skips default cores (comma separated)
-* `ARDUINO_ADD_CORES` -  adds additional cores (comma separated)
-* `ARDUINO_ONLY_CORES` -  use only these cores (comma separated)
-* `ARDUINO_SKIP_BOARDS` - skips default boards (comma separated)
-* `ARDUINO_ADD_BOARDS` -  adds additional boards (comma separated)
-* `ARDUINO_ONLY_BOARDS` -  use only these boards (comma separated)
-* `ARDUINO_SKIP_ADDITIONAL_URLS` - skips default additional_urls (comma separated)
-* `ARDUINO_ADD_ADDITIONAL_URLS` -  adds additional additional_urls (comma separated)
-* `ARDUINO_ONLY_ADDITIONAL_URLS` -  use only these additional_urls (comma separated)
-* `ARDUINO_DEPS_GIT` -  additional Arduino library dependencies to check out via git (comma separated). For example, "PololuMenu=https://github.com/pololu/pololu-menu-arduino.git".
+* `ARDUINO_CI_SKIP_CORES` - skips default cores (comma separated)
+* `ARDUINO_CI_ADD_CORES` -  adds additional cores (comma separated)
+* `ARDUINO_CI_ONLY_CORES` -  use only these cores (comma separated)
+* `ARDUINO_CI_SKIP_BOARDS` - skips default boards (comma separated)
+* `ARDUINO_CI_ADD_BOARDS` -  adds additional boards (comma separated)
+* `ARDUINO_CI_ONLY_BOARDS` -  use only these boards (comma separated)
+* `ARDUINO_CI_SKIP_ADDITIONAL_URLS` - skips default additional_urls (comma separated)
+* `ARDUINO_CI_ADD_ADDITIONAL_URLS` -  adds additional additional_urls (comma separated)
+* `ARDUINO_CI_ONLY_ADDITIONAL_URLS` -  use only these additional_urls (comma separated)
+* `ARDUINO_CI_LIBRARY_ARCHIVES` - additional library archives to download (semi-colon separated, format: `name=uri=hash`) For example: `ARDUINO_CI_LIBRARY_ARCHIVES="PololuMenu=https://github.com/pololu/pololu-menu-arduino/archive/1.0.0.tar.gz=0a1lg5pbylcrl1fc69237z6acwr8cgpbdx8bl8jx3lz4vkvjx6yr`.

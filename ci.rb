@@ -19,9 +19,9 @@ boards = %w(
   arduino:samd:arduino_zero_native
   Intel:arc32:arduino_101
   )
-boards -= (ENV["ARDUINO_SKIP_BOARDS"]&.split(',') || [])
-boards += (ENV["ARDUINO_ADD_BOARDS"]&.split(',') || [])
-boards = (ENV["ARDUINO_ONLY_BOARDS"]&.split(',') || boards)
+boards -= (ENV["ARDUINO_CI_SKIP_BOARDS"]&.split(',') || [])
+boards += (ENV["ARDUINO_CI_ADD_BOARDS"]&.split(',') || [])
+boards = (ENV["ARDUINO_CI_ONLY_BOARDS"]&.split(',') || boards)
 
 cores = %w(
   arduino:avr
@@ -31,17 +31,17 @@ cores = %w(
   esp8266:esp8266
   esp32:esp32
   )
-cores -= (ENV["ARDUINO_SKIP_CORES"]&.split(',') || [])
-cores += (ENV["ARDUINO_ADD_CORES"]&.split(',') || [])
-cores = (ENV["ARDUINO_ONLY_CORES"]&.split(',') || cores)
+cores -= (ENV["ARDUINO_CI_SKIP_CORES"]&.split(',') || [])
+cores += (ENV["ARDUINO_CI_ADD_CORES"]&.split(',') || [])
+cores = (ENV["ARDUINO_CI_ONLY_CORES"]&.split(',') || cores)
 
 additional_urls=%w(
   https://arduino.esp8266.com/stable/package_esp8266com_index.json
   https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 )
-additional_urls -= (ENV["ARDUINO_SKIP_ADDITIONAL_URLS"]&.split(',') || [])
-additional_urls += (ENV["ARDUINO_ADD_ADDITIONAL_URLS"]&.split(',') || [])
-additional_urls = (ENV["ARDUINO_ONLY_ADDITIONAL_URLS"]&.split(',') || additional_urls)
+additional_urls -= (ENV["ARDUINO_CI_SKIP_ADDITIONAL_URLS"]&.split(',') || [])
+additional_urls += (ENV["ARDUINO_CI_ADD_ADDITIONAL_URLS"]&.split(',') || [])
+additional_urls = (ENV["ARDUINO_CI_ONLY_ADDITIONAL_URLS"]&.split(',') || additional_urls)
 
 system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(",")}\"")
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(",")}\" #{cores.join(" ")}")
@@ -71,10 +71,21 @@ deps = File.read('library.properties').
          flat_map { |line| line.delete_prefix(prefix).split(",") }
 system("#{env} arduino-cli lib install #{deps.join(" ")}") if deps.any?
 
-deps_git = (ENV["ARDUINO_DEPS_GIT"]&.split(',') || [])
-deps_git.each do |dep_git|
-  name, git_url = dep_git.split("=")
-  system("git clone \"#{git_url}\" \"#{lib}/#{name}\"")
+ENV["ARDUINO_CI_LIBRARY_ARCHIVES"]&.scan(/([^=]*)=([^=]*)=([^;]*)/) do |match|
+  name = match[0]
+  uri = match[1]
+  wanted_hash = match[2]
+
+  path=`nix-prefetch-url --unpack --print-path --name #{name} #{uri} #{wanted_hash}`.chomp
+  if path.empty?
+    got_hash=`nix-prefetch-url --unpack --name #{name} #{uri}`.chomp
+    puts "Hash mismatch for #{match}"
+    puts "Wanted: #{wanted_hash}"
+    puts "   Got: #{got_hash}"
+    exit 1
+  end
+  store_path = path.lines.last.inspect
+  `ln -s #{store_path} #{lib}/#{name}`
 end
 
 compile_results = {}
