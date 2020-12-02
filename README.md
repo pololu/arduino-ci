@@ -9,7 +9,7 @@ This allows central management of the continuous integration (CI) tests of Ardui
 
 # Usage
 
-`ci.rb` is executable. Run it directly from the directory of an Arduino library. It will have a non-zero exit code if a compilation fails.
+Run `arduino-ci/ci` from the directory of an Arduino library. It will have a non-zero exit code if a compilation fails.
 
 # Customization
 
