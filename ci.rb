@@ -49,17 +49,11 @@ lib = "$PWD/out/libraries"
 `rm -rf "#{lib}"`
 `mkdir -p "#{lib}"`
 `ln -s "$PWD" "#{lib}/OurLibrary"`
-system("arduino-cli lib update-index")
-prefix = "depends="
 
-deps = File.read('library.properties').
-         split.
-         select { |line| line.start_with? prefix }.
-         flat_map { |line| line.delete_prefix(prefix).split(",") }
-system("#{env} arduino-cli lib install #{deps.join(" ")}") if deps.any?
-
+library_archive_deps=[]
 ENV["ARDUINO_CI_LIBRARY_ARCHIVES"]&.scan(/([^=]*)=([^=]*)=([^;]*)/) do |match|
   name = match[0]
+  library_archive_deps << name
   uri = match[1]
   wanted_hash = match[2]
 
@@ -74,6 +68,14 @@ ENV["ARDUINO_CI_LIBRARY_ARCHIVES"]&.scan(/([^=]*)=([^=]*)=([^;]*)/) do |match|
   store_path = path.lines.last.inspect
   `ln -s #{store_path} #{lib}/#{name}`
 end
+
+system("arduino-cli lib update-index")
+prefix = "depends="
+deps = File.read('library.properties').
+         split.
+         select { |line| line.start_with? prefix }.
+         flat_map { |line| line.delete_prefix(prefix).split(",") } - library_archive_deps
+system("#{env} arduino-cli lib install #{deps.join(" ")}") if deps.any?
 
 compile_results = {}
 Dir.glob('examples/*').each do |e|
