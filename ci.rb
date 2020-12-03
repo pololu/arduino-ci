@@ -7,6 +7,13 @@ class String
   def magenta;        "\e[35m#{self}\e[0m" end
 end
 
+config_file_path=".arduino-ci.yaml"
+config = {}
+if File.file?(config_file_path)
+  require 'yaml'
+  config = YAML.load_file(config_file_path)
+end
+
 boards = %w(
   esp32:esp32:featheresp32
   esp8266:esp8266:huzzah
@@ -19,8 +26,11 @@ boards = %w(
   arduino:samd:arduino_zero_native
   Intel:arc32:arduino_101
   )
+boards -= (config["skip_boards"] || [])
 boards -= (ENV["ARDUINO_CI_SKIP_BOARDS"]&.split(',') || [])
+boards += (config["add_boards"] || [])
 boards += (ENV["ARDUINO_CI_ADD_BOARDS"]&.split(',') || [])
+boards = (config["only_boards"] || boards)
 boards = (ENV["ARDUINO_CI_ONLY_BOARDS"]&.split(',') || boards)
 
 get_core = ->(b) { b.split(':')[0..1].join(':') }
@@ -29,8 +39,11 @@ cores = boards.map { |b| get_core[b] }.uniq
 additional_urls = []
 additional_urls << "https://arduino.esp8266.com/stable/package_esp8266com_index.json" if cores.include? "esp8266:esp8266"
 additional_urls << "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" if cores.include? "esp32:esp32"
+additional_urls -= (config["skip_additional_urls"] || [])
 additional_urls -= (ENV["ARDUINO_CI_SKIP_ADDITIONAL_URLS"]&.split(',') || [])
+additional_urls += (config["add_additional_urls"] || [])
 additional_urls += (ENV["ARDUINO_CI_ADD_ADDITIONAL_URLS"]&.split(',') || [])
+additional_urls = (config["only_additional_urls"] || additional_urls)
 additional_urls = (ENV["ARDUINO_CI_ONLY_ADDITIONAL_URLS"]&.split(',') || additional_urls)
 
 system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(",")}\"")
@@ -52,11 +65,17 @@ lib = "$PWD/out/libraries"
 `ln -s "$PWD" "#{lib}/OurLibrary"`
 
 library_archive_deps=[]
-ENV["ARDUINO_CI_LIBRARY_ARCHIVES"]&.scan(/([^=]*)=([^=]*)=([^;]*)/) do |match|
-  name = match[0]
+library_archives = (config["library_archives"] || []) + (ENV["ARDUINO_CI_LIBRARY_ARCHIVES"]&.split(';') || [])
+library_archives.each do |library_archive|
+  match = /^([^=]*)=([^=]*)=(.*)$/.match(library_archive)
+  unless match
+    puts "error: badly formatted library_archive: #{library_archive}".red
+    exit 1
+  end
+  name = match[1]
   library_archive_deps << name
-  uri = match[1]
-  wanted_hash = match[2]
+  uri = match[2]
+  wanted_hash = match[3]
 
   path=`nix-prefetch-url --unpack --print-path --name #{name} #{uri} #{wanted_hash}`.chomp
   if path.empty?
