@@ -23,7 +23,8 @@ boards -= (ENV["ARDUINO_CI_SKIP_BOARDS"]&.split(',') || [])
 boards += (ENV["ARDUINO_CI_ADD_BOARDS"]&.split(',') || [])
 boards = (ENV["ARDUINO_CI_ONLY_BOARDS"]&.split(',') || boards)
 
-cores = boards.map { |b| b.split(':')[0..1].join(':') }.uniq
+get_core = ->(b) { b.split(':')[0..1].join(':') }
+cores = boards.map { |b| get_core[b] }.uniq
 
 additional_urls = []
 additional_urls << "https://arduino.esp8266.com/stable/package_esp8266com_index.json" if cores.include? "esp8266:esp8266"
@@ -81,10 +82,20 @@ compile_results = {}
 Dir.glob('examples/*').each do |e|
   boards.each do |b|
     puts "Compiling #{e} for #{b}".magenta
+
+    cpp_extra_flags =
+      if get_core[b] == "Intel:arc32"
+        # See https://github.com/arduino/ArduinoCore-arc32/issues/599 for why this workaround seems necessary
+        'compiler.cpp.extra_flags=-D__ARDUINO_CI -D__CPU_ARC__ -DCLOCK_SPEED=32 -DCONFIG_SOC_GPIO_32 -DCONFIG_SOC_GPIO_AON -DINFRA_MULTI_CPU_SUPPORT -DCFW_MULTI_CPU_SUPPORT -DHAS_SHARED_MEM -I{build.system.path}/libarc32_arduino101/common -I{build.system.path}/libarc32_arduino101/drivers -I{build.system.path}/libarc32_arduino101/bootcode -I{build.system.path}/libarc32_arduino101/framework/include'
+      else
+       'compiler.cpp.extra_flags=-D__ARDUINO_CI'
+      end
+
     compile_args= %W(
       --warnings all
        --fqbn "#{b}"
        --output-dir "./out/#{e}"
+       --build-properties '#{cpp_extra_flags}'
        "#{e}"
     )
     compile_results["#{e} for #{b}"] = system("#{env} arduino-cli compile #{compile_args.join(" ")}")
