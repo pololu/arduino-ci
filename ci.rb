@@ -81,7 +81,13 @@ compile_results = {}
 Dir.glob('examples/*').each do |e|
   boards.each do |b|
     puts "Compiling #{e} for #{b}".magenta
-    compile_results["#{e} for #{b}"] = system("#{env} arduino-cli compile --warnings all --fqbn \"#{b}\" \"#{e}\" --output-dir \"./out/#{e}\"")
+    compile_args= %W(
+      --warnings all
+       --fqbn "#{b}"
+       --output-dir "./out/#{e}"
+       "#{e}"
+    )
+    compile_results["#{e} for #{b}"] = system("#{env} arduino-cli compile #{compile_args.join(" ")}")
   end
 end
 
