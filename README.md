@@ -47,7 +47,7 @@ jobs:
 Add the below code to a file named `.gitlab-ci.yml` to your library.
 
 ```yaml
-image: $CI_REGISTRY_IMAGE/nixos/nix:2.3.6
+image: nixos/nix:2.3.6
 
 stages:
   - ci
@@ -55,7 +55,8 @@ stages:
 ci:
   stage: ci
   script:
-    - git clone https://github.com/pololu/arduino-ci.git ci
+    - nix-env -f https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz -iA git bash
+    - git clone https://github.com/pololu/arduino-ci ci
     - ci/ci
 ```
 
