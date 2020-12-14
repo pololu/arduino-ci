@@ -26,11 +26,6 @@ jobs:
     steps:
     - name: Checkout this repository
       uses: actions/checkout@v2.3.4
-    - name: Checkout arduino-ci
-      uses: actions/checkout@v2.3.4
-      with:
-         repository: pololu/arduino-ci
-         path: ci
     - name: Cache for arduino-ci
       uses: actions/cache@v2.1.3
       with:
@@ -39,7 +34,7 @@ jobs:
         key: ${{ runner.os }}-arduino
     - name: Install nix
       uses: cachix/install-nix-action@v12
-    - run: ci/ci
+    - run: nix-shell -I nixpkgs=channel:nixpkgs-unstable -p arduino-ci --run "arduino-ci"
 ```
 
 ## Gitlab example
@@ -55,9 +50,7 @@ stages:
 ci:
   stage: ci
   script:
-    - nix-env -f https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz -iA git bash
-    - git clone https://github.com/pololu/arduino-ci ci
-    - ci/ci
+    - nix-shell -I nixpkgs=channel:nixpkgs-unstable -p arduino-ci --run "arduino-ci"
 ```
 
 # Defaults
