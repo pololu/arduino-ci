@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -I nixpkgs=channel:nixos-20.09 -i ruby -p patchelf ruby arduino-cli "python3.withPackages(ps: [ ps.pyserial ])"
+#!nix-shell -I nixpkgs=channel:nixos-20.09 -i ruby -p ruby arduino-cli python3
 
 class String
   def red;            "\e[31m#{self}\e[0m" end
@@ -15,7 +15,6 @@ if File.file?(config_file_path)
 end
 
 boards = %w(
-  esp32:esp32:featheresp32
   esp8266:esp8266:huzzah
   arduino:avr:leonardo
   arduino:avr:mega
@@ -38,7 +37,6 @@ cores = boards.map { |b| get_core[b] }.uniq
 
 additional_urls = []
 additional_urls << "https://arduino.esp8266.com/stable/package_esp8266com_index.json" if cores.include? "esp8266:esp8266"
-additional_urls << "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" if cores.include? "esp32:esp32"
 additional_urls -= (config["skip_additional_urls"] || [])
 additional_urls -= (ENV["ARDUINO_CI_SKIP_ADDITIONAL_URLS"]&.split(',') || [])
 additional_urls += (config["add_additional_urls"] || [])
@@ -48,15 +46,6 @@ additional_urls = (ENV["ARDUINO_CI_ONLY_ADDITIONAL_URLS"]&.split(',') || additio
 
 system("arduino-cli core update-index --additional-urls=\"#{additional_urls.join(",")}\"")
 system("arduino-cli core install --additional-urls=\"#{additional_urls.join(",")}\" #{cores.join(" ")}")
-
-if cores.include? "esp32:esp32"
-  # Fixup esp32 dynamically-linked binaries
-  zlib = `nix-build -I nixpkgs=channel:nixos-20.09 --no-out-link -E '(import <nixpkgs> {}).zlib'`.chomp
-  cpplib = `nix-build -I nixpkgs=channel:nixos-20.09 --no-out-link -E '(import <nixpkgs> {}).stdenv.cc.cc.lib'`.chomp
-  Dir.glob("#{Dir.home}/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/*/bin/*").each do |bin|
-    system "patchelf --set-interpreter \"$(< \"$NIX_CC/nix-support/dynamic-linker\")\" --add-needed #{zlib}/lib/libz.so --add-needed #{cpplib}/lib/libstdc++.so.6 #{bin}"
-  end
-end
 
 env="ARDUINO_DIRECTORIES_USER=\"$PWD/out\""
 lib = "$PWD/out/libraries"

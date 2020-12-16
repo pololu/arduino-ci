@@ -57,7 +57,6 @@ ci:
 
 All examples in your library are compiled with the following boards by default:
 
-* esp32:esp32:featheresp32
 * esp8266:esp8266:huzzah
 * arduino:avr:leonardo
 * arduino:avr:mega
