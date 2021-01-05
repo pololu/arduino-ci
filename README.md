@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout this repository
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v2
     - name: Cache for arduino-ci
-      uses: actions/cache@v2.1.3
+      uses: actions/cache@v2
       with:
         path: |
           ~/.arduino15
