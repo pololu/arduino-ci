@@ -13,7 +13,7 @@ Run `arduino-ci/ci` from the directory of an Arduino library. It will have a non
 
 ## GitHub Actions example
 
-Add the below code to a file named `.github/workflows/ci.yaml` to your library.
+Add the below code to a file named `.github/workflows/ci.yaml` to your library and push it to GitHub.
 
 ```yaml
 name: "CI"
@@ -39,7 +39,7 @@ jobs:
 
 ## GitLab example
 
-Add the below code to a file named `.gitlab-ci.yml` to your library.
+Add the below code to a file named `.gitlab-ci.yml` to your library and push it to GitLab.
 
 ```yaml
 image: nixos/nix:2.3.6
@@ -52,6 +52,8 @@ ci:
   script:
     - nix-shell -I nixpkgs=channel:nixpkgs-unstable -p arduino-ci --run "arduino-ci"
 ```
+
+You may need to [enable GitLab CI](https://docs.gitlab.com/ee/ci/enable_or_disable_ci.html) if you project was created before it was on by default.
 
 # Defaults
 
