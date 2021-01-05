@@ -37,7 +37,7 @@ jobs:
     - run: nix-shell -I nixpkgs=channel:nixpkgs-unstable -p arduino-ci --run "arduino-ci"
 ```
 
-## Gitlab example
+## GitLab example
 
 Add the below code to a file named `.gitlab-ci.yml` to your library.
 
