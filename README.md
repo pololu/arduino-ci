@@ -75,7 +75,7 @@ All examples in your library are compiled with the following boards by default:
 
 There are two ways to customize `arduino-ci`.
 
-* `.aduino-ci.yaml` config file in the top-level directory of your library (*recommended*)
+* `.arduino-ci.yaml` config file in the top-level directory of your library (*recommended*)
 * environment variables (for quick tests)
 
 Yaml configurations are applied first and environment variables are applied last.
